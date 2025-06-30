@@ -13,8 +13,6 @@ Alpine based image for autoinstalling locked dependencies with `uv` by leveragin
 ```Dockerfile
 FROM jorgementx/pythonbuild:3.13-alpine
 
-COPY --chown=app app.py .
-
 CMD ["python", "app.py", "--help"]
 ```
 
@@ -34,10 +32,17 @@ COPY --chown=app --chmod=744 docker/docker-entrypoint.sh .
 COPY --chown=app docker/supervisor.conf .
 COPY docker/nginx_conf/default.conf /etc/nginx/conf.d/default.conf
 COPY docker/nginx_conf/nginx.conf /etc/nginx/nginx.conf
-COPY --chown=app django_proj/ .
 
 RUN mkdir logs tmp
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["supervisord", "-c", "supervisor.conf"]
+```
+
+### Build
+
+> By default the django project is exptected to be the current directory containing `uv.lock` and `pyproject.toml` files. You can override that directory setting `HOST_DJANGO_PROJ_PATH` as --build-arg
+
+```bash
+docker build --build-arg HOST_DJANGO_PROJ_PATH=./django_proj -t myimage:tag .
 ```

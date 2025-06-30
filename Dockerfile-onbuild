@@ -4,7 +4,8 @@ ARG APP_HOME=/home/app
 FROM python:${PYTHON_VERSION}-alpine
 ARG PYTHON_VERSION
 ARG APP_HOME
-LABEL org.opencontainers.image.authors="Jorge Mentxaka <jordims2000@gmail.com>"
+
+LABEL org.opencontainers.image.authors="Jorge Mentxaka <im@jorge.men>"
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
@@ -16,8 +17,11 @@ ENV PATH="${APP_HOME}/venv/bin:$PATH"
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR ${APP_HOME}
 
-ONBUILD COPY ./pyproject.toml .
-ONBUILD COPY ./uv.lock .
+ONBUILD ARG HOST_DJANGO_PROJ_PATH=${HOST_DJANGO_PROJ_PATH:-.}
+ONBUILD COPY ${HOST_DJANGO_PROJ_PATH}/pyproject.toml .
+ONBUILD COPY ${HOST_DJANGO_PROJ_PATH}/uv.lock .
 ONBUILD RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv uv sync --locked --all-groups --no-dev --no-install-project --no-editable
 
 ONBUILD USER app
+
+ONBUILD COPY ${HOST_DJANGO_PROJ_PATH} .
